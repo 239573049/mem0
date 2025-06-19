@@ -164,7 +164,7 @@ def get_memory(request: Request, memory_id: str, auth: str = Depends(verify_api_
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/search/", summary="Search memories")
+@app.post("/search", summary="Search memories")
 def search_memories(request: Request, search_req: SearchRequest, auth: str = Depends(verify_api_key)):
     """Search for memories based on a query."""
     try:
