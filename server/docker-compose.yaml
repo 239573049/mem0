@@ -6,6 +6,7 @@ services:
       context: ..  # Set context to parent directory
       dockerfile: server/dev.Dockerfile
     container_name: mem0
+    image: registry.cn-shenzhen.aliyuncs.com/tokengo/mem0
     env_file:
       - .env
     networks:
