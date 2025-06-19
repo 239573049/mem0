@@ -3,8 +3,9 @@ import os
 from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 
 from mem0 import Memory
@@ -14,6 +15,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 # Load environment variables
 load_dotenv()
 
+# 获取API_KEY环境变量
+API_KEY = os.environ.get("API_KEY")
 
 POSTGRES_HOST = os.environ.get("POSTGRES_HOST", "postgres")
 POSTGRES_PORT = os.environ.get("POSTGRES_PORT", "5432")
@@ -64,6 +67,19 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# 安全相关
+security = HTTPBearer(auto_error=False)
+
+def verify_api_key(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> Optional[str]:
+    """验证API Key - 如果设置了API_KEY环境变量则需要认证"""
+    if API_KEY:
+        if not credentials:
+            raise HTTPException(status_code=401, detail="Authorization header required")
+        if credentials.credentials != API_KEY:
+            raise HTTPException(status_code=401, detail="Invalid API Key")
+        return credentials.credentials
+    return None
+
 
 class Message(BaseModel):
     role: str = Field(..., description="Role of the message (user or assistant).")
@@ -87,7 +103,7 @@ class SearchRequest(BaseModel):
 
 
 @app.post("/configure", summary="Configure Mem0")
-def set_config(config: Dict[str, Any]):
+def set_config(config: Dict[str, Any], auth: str = Depends(verify_api_key)):
     """Set memory configuration."""
     global MEMORY_INSTANCE
     MEMORY_INSTANCE = Memory.from_config(config)
@@ -95,7 +111,7 @@ def set_config(config: Dict[str, Any]):
 
 
 @app.post("/memories", summary="Create memories")
-def add_memory(memory_create: MemoryCreate):
+def add_memory(memory_create: MemoryCreate, auth: str = Depends(verify_api_key)):
     """Store new memories."""
     if not any([memory_create.user_id, memory_create.agent_id, memory_create.run_id]):
         raise HTTPException(status_code=400, detail="At least one identifier (user_id, agent_id, run_id) is required.")
@@ -114,6 +130,7 @@ def get_all_memories(
     user_id: Optional[str] = None,
     run_id: Optional[str] = None,
     agent_id: Optional[str] = None,
+    auth: str = Depends(verify_api_key),
 ):
     """Retrieve stored memories."""
     if not any([user_id, run_id, agent_id]):
@@ -129,7 +146,7 @@ def get_all_memories(
 
 
 @app.get("/memories/{memory_id}", summary="Get a memory")
-def get_memory(memory_id: str):
+def get_memory(memory_id: str, auth: str = Depends(verify_api_key)):
     """Retrieve a specific memory by ID."""
     try:
         return MEMORY_INSTANCE.get(memory_id)
@@ -139,7 +156,7 @@ def get_memory(memory_id: str):
 
 
 @app.post("/search", summary="Search memories")
-def search_memories(search_req: SearchRequest):
+def search_memories(search_req: SearchRequest, auth: str = Depends(verify_api_key)):
     """Search for memories based on a query."""
     try:
         params = {k: v for k, v in search_req.model_dump().items() if v is not None and k != "query"}
@@ -150,7 +167,7 @@ def search_memories(search_req: SearchRequest):
 
 
 @app.put("/memories/{memory_id}", summary="Update a memory")
-def update_memory(memory_id: str, updated_memory: Dict[str, Any]):
+def update_memory(memory_id: str, updated_memory: Dict[str, Any], auth: str = Depends(verify_api_key)):
     """Update an existing memory."""
     try:
         return MEMORY_INSTANCE.update(memory_id=memory_id, data=updated_memory)
@@ -160,7 +177,7 @@ def update_memory(memory_id: str, updated_memory: Dict[str, Any]):
 
 
 @app.get("/memories/{memory_id}/history", summary="Get memory history")
-def memory_history(memory_id: str):
+def memory_history(memory_id: str, auth: str = Depends(verify_api_key)):
     """Retrieve memory history."""
     try:
         return MEMORY_INSTANCE.history(memory_id=memory_id)
@@ -170,7 +187,7 @@ def memory_history(memory_id: str):
 
 
 @app.delete("/memories/{memory_id}", summary="Delete a memory")
-def delete_memory(memory_id: str):
+def delete_memory(memory_id: str, auth: str = Depends(verify_api_key)):
     """Delete a specific memory by ID."""
     try:
         MEMORY_INSTANCE.delete(memory_id=memory_id)
@@ -185,6 +202,7 @@ def delete_all_memories(
     user_id: Optional[str] = None,
     run_id: Optional[str] = None,
     agent_id: Optional[str] = None,
+    auth: str = Depends(verify_api_key),
 ):
     """Delete all memories for a given identifier."""
     if not any([user_id, run_id, agent_id]):
@@ -201,7 +219,7 @@ def delete_all_memories(
 
 
 @app.post("/reset", summary="Reset all memories")
-def reset_memory():
+def reset_memory(auth: str = Depends(verify_api_key)):
     """Completely reset stored memories."""
     try:
         MEMORY_INSTANCE.reset()
