@@ -3,14 +3,16 @@ services:
     container_name: mem0
     image: registry.cn-shenzhen.aliyuncs.com/tokengo/mem0
     build:
-      context: ./server  # Set context to parent directory
-      dockerfile: Dockerfile
+      context: .  # Set context to parent directory
+      dockerfile: server/dev.Dockerfile
     networks:
       - mem0_network
     ports:
       - "8000:8000" # HTTP
     volumes:
       - ./history:/app/history      # History db location. By default, it creates a history.db file on the server folder
+      - ./server:/app                      # Server code. This allows to reload the app when the server code is updated
+      - ./mem0:/app/packages/mem0  # Mem0 library. This allows to reload the app when the library code is updated
     depends_on:
       postgres:
         condition: service_healthy

@@ -39,6 +39,7 @@ HISTORY_DB_PATH = os.environ.get("HISTORY_DB_PATH", "/app/history/history.db")
 
 OPENAI_CHAT_MODEL = os.environ.get("OPENAI_CHAT_MODEL", "gpt-4o")
 OPENAI_EMBEDDING_MODEL = os.environ.get("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
+EMBEDDING_MODEL_DIMS = os.environ.get("EMBEDDING_MODEL_DIMS", 1536)
 
 DEFAULT_CONFIG = {
     "version": "v1.1",
@@ -51,6 +52,7 @@ DEFAULT_CONFIG = {
             "user": POSTGRES_USER,
             "password": POSTGRES_PASSWORD,
             "collection_name": POSTGRES_COLLECTION_NAME,
+            "embedding_model_dims": EMBEDDING_MODEL_DIMS,
         },
     },
     "graph_store": {
@@ -191,6 +193,7 @@ def search_memories(request: Request, search_req: SearchRequest, auth: str = Dep
         value = MEMORY_INSTANCE.search(query=search_req.query, **params)
         # 清理结果中的NaN值
         cleaned_value = clean_nan_values(value)
+        print(cleaned_value)
         return cleaned_value
     except Exception as e:
         logging.exception("Error in search_memories:")
