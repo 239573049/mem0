@@ -5,8 +5,6 @@ services:
     build:
       context: .  # Set context to parent directory
       dockerfile: server/dev.Dockerfile
-    env_file:
-      - .env
     networks:
       - mem0_network
     volumes:
