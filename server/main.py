@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 from typing import Any, Dict, List, Optional
 
@@ -118,6 +119,21 @@ class SearchRequest(BaseModel):
     filters: Optional[Dict[str, Any]] = None
 
 
+def clean_nan_values(obj):
+    """递归清理对象中的NaN值和无穷大值，将其替换为None"""
+    if isinstance(obj, dict):
+        return {k: clean_nan_values(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [clean_nan_values(item) for item in obj]
+    elif isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+        else:
+            return obj
+    else:
+        return obj
+
+
 @app.post("/memories/", summary="Create memories")
 def add_memory(request: Request, memory_create: MemoryCreate, auth: str = Depends(verify_api_key)):
     """Store new memories."""
@@ -127,7 +143,8 @@ def add_memory(request: Request, memory_create: MemoryCreate, auth: str = Depend
     params = {k: v for k, v in memory_create.model_dump().items() if v is not None and k != "messages"}
     try:
         response = MEMORY_INSTANCE.add(messages=[m.model_dump() for m in memory_create.messages], **params)
-        return JSONResponse(content=response)
+        cleaned_response = clean_nan_values(response)
+        return JSONResponse(content=cleaned_response)
     except Exception as e:
         logging.exception("Error in add_memory:")  # This will log the full traceback
         raise HTTPException(status_code=500, detail=str(e))
@@ -158,7 +175,9 @@ def get_all_memories(
 def get_memory(request: Request, memory_id: str, auth: str = Depends(verify_api_key)):
     """Retrieve a specific memory by ID."""
     try:
-        return MEMORY_INSTANCE.get(memory_id)
+        result = MEMORY_INSTANCE.get(memory_id)
+        cleaned_result = clean_nan_values(result)
+        return cleaned_result
     except Exception as e:
         logging.exception("Error in get_memory:")
         raise HTTPException(status_code=500, detail=str(e))
@@ -169,7 +188,10 @@ def search_memories(request: Request, search_req: SearchRequest, auth: str = Dep
     """Search for memories based on a query."""
     try:
         params = {k: v for k, v in search_req.model_dump().items() if v is not None and k != "query"}
-        return MEMORY_INSTANCE.search(query=search_req.query, **params)
+        value = MEMORY_INSTANCE.search(query=search_req.query, **params)
+        # 清理结果中的NaN值
+        cleaned_value = clean_nan_values(value)
+        return cleaned_value
     except Exception as e:
         logging.exception("Error in search_memories:")
         raise HTTPException(status_code=500, detail=str(e))
@@ -179,7 +201,9 @@ def search_memories(request: Request, search_req: SearchRequest, auth: str = Dep
 def update_memory(request: Request, memory_id: str, updated_memory: Dict[str, Any], auth: str = Depends(verify_api_key)):
     """Update an existing memory."""
     try:
-        return MEMORY_INSTANCE.update(memory_id=memory_id, data=updated_memory)
+        result = MEMORY_INSTANCE.update(memory_id=memory_id, data=updated_memory)
+        cleaned_result = clean_nan_values(result)
+        return cleaned_result
     except Exception as e:
         logging.exception("Error in update_memory:")
         raise HTTPException(status_code=500, detail=str(e))
@@ -189,7 +213,9 @@ def update_memory(request: Request, memory_id: str, updated_memory: Dict[str, An
 def memory_history(request: Request, memory_id: str, auth: str = Depends(verify_api_key)):
     """Retrieve memory history."""
     try:
-        return MEMORY_INSTANCE.history(memory_id=memory_id)
+        result = MEMORY_INSTANCE.history(memory_id=memory_id)
+        cleaned_result = clean_nan_values(result)
+        return cleaned_result
     except Exception as e:
         logging.exception("Error in memory_history:")
         raise HTTPException(status_code=500, detail=str(e))

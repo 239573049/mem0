@@ -7,6 +7,8 @@ services:
       dockerfile: server/dev.Dockerfile
     networks:
       - mem0_network
+    ports:
+      - "8000:8000" # HTTP
     volumes:
       - ./history:/app/history      # History db location. By default, it creates a history.db file on the server folder
       - ./server:/app                      # Server code. This allows to reload the app when the server code is updated
@@ -22,7 +24,7 @@ services:
       - PYTHONUNBUFFERED=1  # Ensures Python output is sent straight to terminal
       - API_KEY=
       - OPENAI_BASE_URL=https://api.token-ai.cn/v1
-      - OPENAI_API_KEY=
+      - OPENAI_API_KEY=sk-rAavsM7v0GyPGyRm6zdFQRt6YijSo4GYTgKKTU
       - NEO4J_URI=bolt://neo4j:7687
       - NEO4J_USERNAME=neo4j
       - NEO4J_PASSWORD=mem0graph
