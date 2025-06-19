@@ -2,6 +2,9 @@ services:
   mem0:
     container_name: mem0
     image: registry.cn-shenzhen.aliyuncs.com/tokengo/mem0
+    build:
+      context: .  # Set context to parent directory
+      dockerfile: server/dev.Dockerfile
     env_file:
       - .env
     networks:
