@@ -102,15 +102,7 @@ class SearchRequest(BaseModel):
     filters: Optional[Dict[str, Any]] = None
 
 
-@app.post("/configure", summary="Configure Mem0")
-def set_config(config: Dict[str, Any], auth: str = Depends(verify_api_key)):
-    """Set memory configuration."""
-    global MEMORY_INSTANCE
-    MEMORY_INSTANCE = Memory.from_config(config)
-    return {"message": "Configuration set successfully"}
-
-
-@app.post("/memories", summary="Create memories")
+@app.post("/memories/", summary="Create memories")
 def add_memory(memory_create: MemoryCreate, auth: str = Depends(verify_api_key)):
     """Store new memories."""
     if not any([memory_create.user_id, memory_create.agent_id, memory_create.run_id]):
@@ -125,7 +117,7 @@ def add_memory(memory_create: MemoryCreate, auth: str = Depends(verify_api_key))
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/memories", summary="Get memories")
+@app.get("/memories/", summary="Get memories")
 def get_all_memories(
     user_id: Optional[str] = None,
     run_id: Optional[str] = None,
@@ -155,7 +147,7 @@ def get_memory(memory_id: str, auth: str = Depends(verify_api_key)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/search", summary="Search memories")
+@app.post("/search/", summary="Search memories")
 def search_memories(search_req: SearchRequest, auth: str = Depends(verify_api_key)):
     """Search for memories based on a query."""
     try:
@@ -176,7 +168,7 @@ def update_memory(memory_id: str, updated_memory: Dict[str, Any], auth: str = De
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/memories/{memory_id}/history", summary="Get memory history")
+@app.get("/memories/{memory_id}/history/", summary="Get memory history")
 def memory_history(memory_id: str, auth: str = Depends(verify_api_key)):
     """Retrieve memory history."""
     try:
@@ -197,7 +189,7 @@ def delete_memory(memory_id: str, auth: str = Depends(verify_api_key)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.delete("/memories", summary="Delete all memories")
+@app.delete("/memories/", summary="Delete all memories")
 def delete_all_memories(
     user_id: Optional[str] = None,
     run_id: Optional[str] = None,
@@ -218,7 +210,7 @@ def delete_all_memories(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/reset", summary="Reset all memories")
+@app.post("/reset/", summary="Reset all memories")
 def reset_memory(auth: str = Depends(verify_api_key)):
     """Completely reset stored memories."""
     try:
