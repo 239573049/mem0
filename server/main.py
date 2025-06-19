@@ -201,7 +201,6 @@ def search_memories(request: Request, search_req: SearchRequest, auth: str = Dep
         value = MEMORY_INSTANCE.search(query=search_req.query, **params)
         # 清理结果中的NaN值
         cleaned_value = clean_nan_values(value)
-        print(cleaned_value)
         return cleaned_value
     except Exception as e:
         logging.exception("Error in search_memories:")
