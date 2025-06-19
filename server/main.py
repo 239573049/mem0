@@ -36,6 +36,9 @@ MEMGRAPH_PASSWORD = os.environ.get("MEMGRAPH_PASSWORD", "mem0graph")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 HISTORY_DB_PATH = os.environ.get("HISTORY_DB_PATH", "/app/history/history.db")
 
+OPENAI_CHAT_MODEL = os.environ.get("OPENAI_CHAT_MODEL", "gpt-4o")
+OPENAI_EMBEDDING_MODEL = os.environ.get("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
+
 DEFAULT_CONFIG = {
     "version": "v1.1",
     "vector_store": {
@@ -53,8 +56,8 @@ DEFAULT_CONFIG = {
         "provider": "neo4j",
         "config": {"url": NEO4J_URI, "username": NEO4J_USERNAME, "password": NEO4J_PASSWORD},
     },
-    "llm": {"provider": "openai", "config": {"api_key": OPENAI_API_KEY, "temperature": 0.2, "model": "gpt-4o"}},
-    "embedder": {"provider": "openai", "config": {"api_key": OPENAI_API_KEY, "model": "text-embedding-3-small"}},
+    "llm": {"provider": "openai", "config": {"api_key": OPENAI_API_KEY, "temperature": 0.2, "model": OPENAI_CHAT_MODEL}},
+    "embedder": {"provider": "openai", "config": {"api_key": OPENAI_API_KEY, "model": OPENAI_EMBEDDING_MODEL}},
     "history_db_path": HISTORY_DB_PATH,
 }
 
@@ -69,16 +72,29 @@ app = FastAPI(
 
 # 安全相关
 security = HTTPBearer(auto_error=False)
-
-def verify_api_key(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> Optional[str]:
-    """验证API Key - 如果设置了API_KEY环境变量则需要认证"""
-    if API_KEY:
-        if not credentials:
-            raise HTTPException(status_code=401, detail="Authorization header required")
-        if credentials.credentials != API_KEY:
-            raise HTTPException(status_code=401, detail="Invalid API Key")
-        return credentials.credentials
-    return None
+def verify_api_key(request: Request, credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> Optional[str]:
+    """验证API Key - 如果设置了API_KEY环境变量则需要认证，支持Bearer和Token两种格式"""
+    if not API_KEY:
+        return None
+    
+    # 从Authorization头获取token
+    auth_header = request.headers.get("Authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Authorization header required")
+    
+    # 支持两种格式: "Bearer token" 和 "Token token"
+    token = None
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:]  # 去掉 "Bearer " 前缀
+    elif auth_header.startswith("Token "):
+        token = auth_header[6:]  # 去掉 "Token " 前缀
+    else:
+        raise HTTPException(status_code=401, detail="Invalid authorization format. Use 'Bearer token' or 'Token token'")
+    
+    if token != API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid API Key")
+    
+    return token
 
 
 class Message(BaseModel):
@@ -103,7 +119,7 @@ class SearchRequest(BaseModel):
 
 
 @app.post("/memories/", summary="Create memories")
-def add_memory(memory_create: MemoryCreate, auth: str = Depends(verify_api_key)):
+def add_memory(request: Request, memory_create: MemoryCreate, auth: str = Depends(verify_api_key)):
     """Store new memories."""
     if not any([memory_create.user_id, memory_create.agent_id, memory_create.run_id]):
         raise HTTPException(status_code=400, detail="At least one identifier (user_id, agent_id, run_id) is required.")
@@ -119,6 +135,7 @@ def add_memory(memory_create: MemoryCreate, auth: str = Depends(verify_api_key))
 
 @app.get("/memories/", summary="Get memories")
 def get_all_memories(
+    request: Request,
     user_id: Optional[str] = None,
     run_id: Optional[str] = None,
     agent_id: Optional[str] = None,
@@ -138,7 +155,7 @@ def get_all_memories(
 
 
 @app.get("/memories/{memory_id}", summary="Get a memory")
-def get_memory(memory_id: str, auth: str = Depends(verify_api_key)):
+def get_memory(request: Request, memory_id: str, auth: str = Depends(verify_api_key)):
     """Retrieve a specific memory by ID."""
     try:
         return MEMORY_INSTANCE.get(memory_id)
@@ -148,7 +165,7 @@ def get_memory(memory_id: str, auth: str = Depends(verify_api_key)):
 
 
 @app.post("/search/", summary="Search memories")
-def search_memories(search_req: SearchRequest, auth: str = Depends(verify_api_key)):
+def search_memories(request: Request, search_req: SearchRequest, auth: str = Depends(verify_api_key)):
     """Search for memories based on a query."""
     try:
         params = {k: v for k, v in search_req.model_dump().items() if v is not None and k != "query"}
@@ -159,7 +176,7 @@ def search_memories(search_req: SearchRequest, auth: str = Depends(verify_api_ke
 
 
 @app.put("/memories/{memory_id}", summary="Update a memory")
-def update_memory(memory_id: str, updated_memory: Dict[str, Any], auth: str = Depends(verify_api_key)):
+def update_memory(request: Request, memory_id: str, updated_memory: Dict[str, Any], auth: str = Depends(verify_api_key)):
     """Update an existing memory."""
     try:
         return MEMORY_INSTANCE.update(memory_id=memory_id, data=updated_memory)
@@ -169,7 +186,7 @@ def update_memory(memory_id: str, updated_memory: Dict[str, Any], auth: str = De
 
 
 @app.get("/memories/{memory_id}/history/", summary="Get memory history")
-def memory_history(memory_id: str, auth: str = Depends(verify_api_key)):
+def memory_history(request: Request, memory_id: str, auth: str = Depends(verify_api_key)):
     """Retrieve memory history."""
     try:
         return MEMORY_INSTANCE.history(memory_id=memory_id)
@@ -179,7 +196,7 @@ def memory_history(memory_id: str, auth: str = Depends(verify_api_key)):
 
 
 @app.delete("/memories/{memory_id}", summary="Delete a memory")
-def delete_memory(memory_id: str, auth: str = Depends(verify_api_key)):
+def delete_memory(request: Request, memory_id: str, auth: str = Depends(verify_api_key)):
     """Delete a specific memory by ID."""
     try:
         MEMORY_INSTANCE.delete(memory_id=memory_id)
@@ -191,6 +208,7 @@ def delete_memory(memory_id: str, auth: str = Depends(verify_api_key)):
 
 @app.delete("/memories/", summary="Delete all memories")
 def delete_all_memories(
+    request: Request,
     user_id: Optional[str] = None,
     run_id: Optional[str] = None,
     agent_id: Optional[str] = None,
@@ -211,7 +229,7 @@ def delete_all_memories(
 
 
 @app.post("/reset/", summary="Reset all memories")
-def reset_memory(auth: str = Depends(verify_api_key)):
+def reset_memory(request: Request, auth: str = Depends(verify_api_key)):
     """Completely reset stored memories."""
     try:
         MEMORY_INSTANCE.reset()

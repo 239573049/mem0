@@ -32,6 +32,8 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_COLLECTION_NAME=mem0Net
+      - OPENAI_CHAT_MODEL=gpt-4.1
+      - OPENAI_EMBEDDING_MODEL=text-embedding-3-small
 
 
   postgres:
