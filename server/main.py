@@ -111,6 +111,8 @@ class MemoryCreate(BaseModel):
     agent_id: Optional[str] = None
     run_id: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
+    memory_type: Optional[str] = None
+    prompt: Optional[str] = None
 
 
 class SearchRequest(BaseModel):
@@ -119,6 +121,8 @@ class SearchRequest(BaseModel):
     run_id: Optional[str] = None
     agent_id: Optional[str] = None
     filters: Optional[Dict[str, Any]] = None
+    threshold: Optional[float] = None
+    limit: int = 50
 
 
 def clean_nan_values(obj):
@@ -189,6 +193,10 @@ def get_memory(request: Request, memory_id: str, auth: str = Depends(verify_api_
 def search_memories(request: Request, search_req: SearchRequest, auth: str = Depends(verify_api_key)):
     """Search for memories based on a query."""
     try:
+        
+        print("threshold：",search_req.threshold);
+        print("limit：",search_req.limit);
+
         params = {k: v for k, v in search_req.model_dump().items() if v is not None and k != "query"}
         value = MEMORY_INSTANCE.search(query=search_req.query, **params)
         # 清理结果中的NaN值
