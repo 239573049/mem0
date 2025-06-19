@@ -1,169 +1,516 @@
+# Mem0 - 基于Docker的智能记忆层
+
 <p align="center">
   <a href="https://github.com/mem0ai/mem0">
     <img src="docs/images/banner-sm.png" width="800px" alt="Mem0 - The Memory Layer for Personalized AI">
   </a>
 </p>
-<p align="center" style="display: flex; justify-content: center; gap: 20px; align-items: center;">
-  <a href="https://trendshift.io/repositories/11194" target="blank">
-    <img src="https://trendshift.io/api/badge/repositories/11194" alt="mem0ai%2Fmem0 | Trendshift" width="250" height="55"/>
-  </a>
+
+<p align="center">
+  <strong>基于 Mem0 的 Docker 化部署方案 - 为 AI 助手和智能体提供可扩展的长期记忆能力</strong>
 </p>
 
 <p align="center">
-  <a href="https://mem0.ai">Learn more</a>
-  ·
-  <a href="https://mem0.dev/DiG">Join Discord</a>
-  ·
-  <a href="https://mem0.dev/demo">Demo</a>
-  ·
-  <a href="https://mem0.dev/openmemory">OpenMemory</a>
+  <a href="#快速开始">快速开始</a> •
+  <a href="#功能特性">功能特性</a> •
+  <a href="#部署指南">部署指南</a> •
+  <a href="#api-文档">API 文档</a> •
+  <a href="#示例">示例</a>
 </p>
 
-<p align="center">
-  <a href="https://mem0.dev/DiG">
-    <img src="https://dcbadge.vercel.app/api/server/6PzXDgEjG5?style=flat" alt="Mem0 Discord">
-  </a>
-  <a href="https://pepy.tech/project/mem0ai">
-    <img src="https://img.shields.io/pypi/dm/mem0ai" alt="Mem0 PyPI - Downloads">
-  </a>
-  <a href="https://github.com/mem0ai/mem0">
-    <img src="https://img.shields.io/github/commit-activity/m/mem0ai/mem0?style=flat-square" alt="GitHub commit activity">
-  </a>
-  <a href="https://pypi.org/project/mem0ai" target="blank">
-    <img src="https://img.shields.io/pypi/v/mem0ai?color=%2334D058&label=pypi%20package" alt="Package version">
-  </a>
-  <a href="https://www.npmjs.com/package/mem0ai" target="blank">
-    <img src="https://img.shields.io/npm/v/mem0ai" alt="Npm package">
-  </a>
-  <a href="https://www.ycombinator.com/companies/mem0">
-    <img src="https://img.shields.io/badge/Y%20Combinator-S24-orange?style=flat-square" alt="Y Combinator S24">
-  </a>
-</p>
+---
 
-<p align="center">
-  <a href="https://mem0.ai/research"><strong>📄 Building Production-Ready AI Agents with Scalable Long-Term Memory →</strong></a>
-</p>
-<p align="center">
-  <strong>⚡ +26% Accuracy vs. OpenAI Memory • 🚀 91% Faster • 💰 90% Fewer Tokens</strong>
-</p>
+## 📋 目录
 
-##  🔥 Research Highlights
-- **+26% Accuracy** over OpenAI Memory on the LOCOMO benchmark
-- **91% Faster Responses** than full-context, ensuring low-latency at scale
-- **90% Lower Token Usage** than full-context, cutting costs without compromise
-- [Read the full paper](https://mem0.ai/research)
+- [项目简介](#项目简介)
+- [功能特性](#功能特性)
+- [系统架构](#系统架构)
+- [快速开始](#快速开始)
+- [部署指南](#部署指南)
+- [API 文档](#api-文档)
+- [配置说明](#配置说明)
+- [示例代码](#示例代码)
+- [故障排除](#故障排除)
+- [贡献指南](#贡献指南)
+- [许可证](#许可证)
 
-# Introduction
+## 项目简介
 
-[Mem0](https://mem0.ai) ("mem-zero") enhances AI assistants and agents with an intelligent memory layer, enabling personalized AI interactions. It remembers user preferences, adapts to individual needs, and continuously learns over time—ideal for customer support chatbots, AI assistants, and autonomous systems.
+本项目是基于 [Mem0](https://mem0.ai) 的 Docker 化改造版本，提供了完整的容器化部署方案。Mem0 是一个智能记忆层，能够为 AI 助手和智能体提供个性化的交互体验，通过记住用户偏好、适应个人需求并持续学习来提升AI系统的能力。
 
-### Key Features & Use Cases
+### 🎯 主要改进
 
-**Core Capabilities:**
-- **Multi-Level Memory**: Seamlessly retains User, Session, and Agent state with adaptive personalization
-- **Developer-Friendly**: Intuitive API, cross-platform SDKs, and a fully managed service option
+- **🐳 Docker 化部署**: 完整的 Docker Compose 配置，一键启动所有服务
+- **🔧 中文化支持**: 提供中文文档和配置说明
+- **🚀 生产就绪**: 包含 PostgreSQL + Neo4j 的完整技术栈
+- **🔐 安全认证**: 内置 API Key 认证机制
+- **📊 数据持久化**: 完整的数据存储和备份方案
 
-**Applications:**
-- **AI Assistants**: Consistent, context-rich conversations
-- **Customer Support**: Recall past tickets and user history for tailored help
-- **Healthcare**: Track patient preferences and history for personalized care
-- **Productivity & Gaming**: Adaptive workflows and environments based on user behavior
+## 功能特性
 
-## 🚀 Quickstart Guide <a name="quickstart"></a>
+### 核心能力
+- **🧠 多层级记忆**: 无缝保留用户、会话和智能体状态，实现自适应个性化
+- **🔍 智能搜索**: 基于语义的记忆检索和匹配
+- **📈 持续学习**: 从交互中不断学习和优化
+- **🔄 实时更新**: 支持记忆的实时添加、更新和删除
 
-Choose between our hosted platform or self-hosted package:
+### 应用场景
+- **🤖 AI 助手**: 提供一致的、上下文丰富的对话体验
+- **💬 客服系统**: 记住过往工单和用户历史，提供个性化帮助
+- **🏥 医疗健康**: 跟踪患者偏好和历史，提供个性化护理
+- **🎮 生产力工具**: 基于用户行为的自适应工作流程和环境
 
-### Hosted Platform
+## 系统架构
 
-Get up and running in minutes with automatic updates, analytics, and enterprise security.
+```mermaid
+graph TB
+    Client[客户端应用] --> API[Mem0 API Server]
+    API --> Memory[Memory Engine]
+    Memory --> Vector[Vector Store<br/>PostgreSQL + pgvector]
+    Memory --> Graph[Graph Store<br/>Neo4j]
+    Memory --> LLM[LLM Provider<br/>OpenAI/其他]
+    
+    subgraph "Docker 容器"
+        API
+        Vector
+        Graph
+    end
+```
 
-1. Sign up on [Mem0 Platform](https://app.mem0.ai)
-2. Embed the memory layer via SDK or API keys
+## 快速开始
 
-### Self-Hosted (Open Source)
+### 前置要求
 
-Install the sdk via pip:
+- Docker 20.10+
+- Docker Compose 2.0+
+- 至少 4GB 可用内存
+- OpenAI API Key 或其他兼容的 LLM 服务
+
+### 一键启动
+
+1. **克隆项目**
+   ```bash
+   git clone <your-repo-url>
+   cd mem0
+   ```
+
+2. **配置环境变量**
+   ```bash
+   cp .env.example .env
+   # 编辑 .env 文件，设置必要的环境变量
+   ```
+
+3. **启动服务**
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **验证部署**
+   ```bash
+   # 检查服务状态
+   docker-compose ps
+   
+   # 查看 API 文档
+   curl http://localhost:8000/docs
+   ```
+
+## 部署指南
+
+### 环境变量配置
+
+创建 `.env` 文件并配置以下变量：
+
+```env
+# API 认证
+API_KEY=your_secure_api_key_here
+
+# OpenAI 配置
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_BASE_URL=https://api.openai.com/v1
+
+# 数据库配置
+POSTGRES_DB=mem0_db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_postgres_password
+POSTGRES_COLLECTION_NAME=memories
+
+# Neo4j 配置
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=your_neo4j_password
+
+# 其他配置
+HISTORY_DB_PATH=/app/history/history.db
+```
+
+### 服务配置详解
+
+#### 1. Mem0 API 服务
+- **端口**: 8000
+- **功能**: 提供 RESTful API 接口
+- **依赖**: PostgreSQL, Neo4j
+
+#### 2. PostgreSQL (向量数据库)
+- **端口**: 5432
+- **功能**: 存储向量化的记忆数据
+- **扩展**: pgvector 用于向量相似度搜索
+
+#### 3. Neo4j (图数据库)
+- **端口**: 7474 (HTTP), 7687 (Bolt)
+- **功能**: 存储记忆之间的关系图谱
+- **插件**: APOC 用于图数据处理
+
+### 生产环境部署
+
+1. **资源规划**
+   ```yaml
+   # 推荐配置
+   CPU: 4 cores
+   Memory: 8GB+
+   Storage: 50GB+ SSD
+   ```
+
+2. **安全配置**
+   ```bash
+   # 设置强密码
+   # 配置防火墙规则
+   # 启用 HTTPS
+   # 定期备份数据
+   ```
+
+3. **监控配置**
+   ```bash
+   # 添加健康检查
+   # 配置日志收集
+   # 设置告警规则
+   ```
+
+## API 文档
+
+### 基础认证
+
+所有 API 请求都需要在 Header 中包含 API Key：
 
 ```bash
-pip install mem0ai
+Authorization: Bearer your_api_key_here
 ```
 
-Install sdk via npm:
-```bash
-npm install mem0ai
-```
+### 核心 API 端点
 
-### Basic Usage
+#### 1. 添加记忆
+```http
+POST /memories/
+Content-Type: application/json
 
-Mem0 requires an LLM to function, with `gpt-4o-mini` from OpenAI as the default. However, it supports a variety of LLMs; for details, refer to our [Supported LLMs documentation](https://docs.mem0.ai/components/llms/overview).
-
-First step is to instantiate the memory:
-
-```python
-from openai import OpenAI
-from mem0 import Memory
-
-openai_client = OpenAI()
-memory = Memory()
-
-def chat_with_memories(message: str, user_id: str = "default_user") -> str:
-    # Retrieve relevant memories
-    relevant_memories = memory.search(query=message, user_id=user_id, limit=3)
-    memories_str = "\n".join(f"- {entry['memory']}" for entry in relevant_memories["results"])
-
-    # Generate Assistant response
-    system_prompt = f"You are a helpful AI. Answer the question based on query and memories.\nUser Memories:\n{memories_str}"
-    messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": message}]
-    response = openai_client.chat.completions.create(model="gpt-4o-mini", messages=messages)
-    assistant_response = response.choices[0].message.content
-
-    # Create new memories from the conversation
-    messages.append({"role": "assistant", "content": assistant_response})
-    memory.add(messages, user_id=user_id)
-
-    return assistant_response
-
-def main():
-    print("Chat with AI (type 'exit' to quit)")
-    while True:
-        user_input = input("You: ").strip()
-        if user_input.lower() == 'exit':
-            print("Goodbye!")
-            break
-        print(f"AI: {chat_with_memories(user_input)}")
-
-if __name__ == "__main__":
-    main()
-```
-
-For detailed integration steps, see the [Quickstart](https://docs.mem0.ai/quickstart) and [API Reference](https://docs.mem0.ai/api-reference).
-
-## 🔗 Integrations & Demos
-
-- **ChatGPT with Memory**: Personalized chat powered by Mem0 ([Live Demo](https://mem0.dev/demo))
-- **Browser Extension**: Store memories across ChatGPT, Perplexity, and Claude ([Chrome Extension](https://chromewebstore.google.com/detail/onihkkbipkfeijkadecaafbgagkhglop?utm_source=item-share-cb))
-- **Langgraph Support**: Build a customer bot with Langgraph + Mem0 ([Guide](https://docs.mem0.ai/integrations/langgraph))
-- **CrewAI Integration**: Tailor CrewAI outputs with Mem0 ([Example](https://docs.mem0.ai/integrations/crewai))
-
-## 📚 Documentation & Support
-
-- Full docs: https://docs.mem0.ai
-- Community: [Discord](https://mem0.dev/DiG) · [Twitter](https://x.com/mem0ai)
-- Contact: founders@mem0.ai
-
-## Citation
-
-We now have a paper you can cite:
-
-```bibtex
-@article{mem0,
-  title={Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory},
-  author={Chhikara, Prateek and Khant, Dev and Aryan, Saket and Singh, Taranjeet and Yadav, Deshraj},
-  journal={arXiv preprint arXiv:2504.19413},
-  year={2025}
+{
+  "messages": [
+    {"role": "user", "content": "我喜欢喝咖啡"},
+    {"role": "assistant", "content": "好的，我记住了您喜欢咖啡"}
+  ],
+  "user_id": "user_123",
+  "metadata": {"source": "chat"}
 }
 ```
 
-## ⚖️ License
+#### 2. 搜索记忆
+```http
+POST /search/
+Content-Type: application/json
 
-Apache 2.0 — see the [LICENSE](LICENSE) file for details.
+{
+  "query": "用户的饮品偏好",
+  "user_id": "user_123",
+  "limit": 5
+}
+```
+
+#### 3. 获取记忆
+```http
+GET /memories/?user_id=user_123
+```
+
+#### 4. 更新记忆
+```http
+PUT /memories/{memory_id}
+Content-Type: application/json
+
+{
+  "content": "更新后的记忆内容"
+}
+```
+
+#### 5. 删除记忆
+```http
+DELETE /memories/{memory_id}
+```
+
+### API 响应格式
+
+```json
+{
+  "success": true,
+  "data": {
+    "memory_id": "mem_123",
+    "content": "记忆内容",
+    "created_at": "2024-01-01T00:00:00Z"
+  },
+  "message": "操作成功"
+}
+```
+
+## 配置说明
+
+### Docker Compose 配置
+
+```yaml
+# docker-compose.yml 主要配置项说明
+services:
+  mem0:
+    # 使用自定义镜像
+    image: registry.cn-shenzhen.aliyuncs.com/tokengo/mem0
+    # 环境变量配置
+    environment:
+      - OPENAI_BASE_URL=https://api.token-ai.cn/v1
+      - NEO4J_URI=bolt://neo4j:7687
+    # 数据卷挂载
+    volumes:
+      - ./history:/app/history
+```
+
+### 自定义配置
+
+可以通过修改 `server/main.py` 中的 `DEFAULT_CONFIG` 来自定义配置：
+
+```python
+DEFAULT_CONFIG = {
+    "version": "v1.1",
+    "vector_store": {
+        "provider": "pgvector",
+        "config": {
+            "host": "postgres",
+            "port": 5432,
+            # ... 其他配置
+        }
+    },
+    "llm": {
+        "provider": "openai",
+        "config": {
+            "model": "gpt-4o",
+            "temperature": 0.2
+        }
+    }
+}
+```
+
+## 示例代码
+
+### Python 客户端示例
+
+```python
+import requests
+import json
+
+class Mem0Client:
+    def __init__(self, base_url="http://localhost:8000", api_key=None):
+        self.base_url = base_url
+        self.headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}" if api_key else ""
+        }
+    
+    def add_memory(self, messages, user_id, metadata=None):
+        """添加新记忆"""
+        data = {
+            "messages": messages,
+            "user_id": user_id,
+            "metadata": metadata or {}
+        }
+        response = requests.post(
+            f"{self.base_url}/memories/",
+            headers=self.headers,
+            json=data
+        )
+        return response.json()
+    
+    def search_memories(self, query, user_id, limit=5):
+        """搜索记忆"""
+        data = {
+            "query": query,
+            "user_id": user_id,
+            "limit": limit
+        }
+        response = requests.post(
+            f"{self.base_url}/search/",
+            headers=self.headers,
+            json=data
+        )
+        return response.json()
+
+# 使用示例
+client = Mem0Client(api_key="your_api_key")
+
+# 添加记忆
+messages = [
+    {"role": "user", "content": "我明天要参加重要会议"},
+    {"role": "assistant", "content": "我会帮您记住这个重要会议"}
+]
+result = client.add_memory(messages, user_id="user_123")
+print(f"记忆已添加: {result}")
+
+# 搜索记忆
+memories = client.search_memories("会议", user_id="user_123")
+print(f"找到相关记忆: {memories}")
+```
+
+### 聊天机器人集成示例
+
+```python
+from openai import OpenAI
+import requests
+
+class ChatBotWithMemory:
+    def __init__(self, openai_api_key, mem0_api_key, mem0_base_url="http://localhost:8000"):
+        self.openai_client = OpenAI(api_key=openai_api_key)
+        self.mem0_client = Mem0Client(mem0_base_url, mem0_api_key)
+    
+    def chat(self, message, user_id):
+        # 搜索相关记忆
+        memories = self.mem0_client.search_memories(message, user_id, limit=3)
+        memory_context = "\n".join([
+            f"- {mem['content']}" for mem in memories.get('results', [])
+        ])
+        
+        # 构建提示词
+        system_prompt = f"""你是一个有记忆的AI助手。
+        基于以下用户记忆来回答问题：
+        {memory_context}
+        
+        请提供个性化的回答。"""
+        
+        # 调用 OpenAI
+        response = self.openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": message}
+            ]
+        )
+        
+        assistant_response = response.choices[0].message.content
+        
+        # 保存新的对话记忆
+        conversation = [
+            {"role": "user", "content": message},
+            {"role": "assistant", "content": assistant_response}
+        ]
+        self.mem0_client.add_memory(conversation, user_id)
+        
+        return assistant_response
+
+# 使用示例
+bot = ChatBotWithMemory(
+    openai_api_key="your_openai_key",
+    mem0_api_key="your_mem0_key"
+)
+
+response = bot.chat("今天天气怎么样？", user_id="user_123")
+print(response)
+```
+
+## 故障排除
+
+### 常见问题
+
+1. **服务启动失败**
+   ```bash
+   # 检查端口占用
+   netstat -tulpn | grep :8000
+   
+   # 检查 Docker 日志
+   docker-compose logs mem0
+   ```
+
+2. **数据库连接失败**
+   ```bash
+   # 检查数据库状态
+   docker-compose ps postgres neo4j
+   
+   # 重启数据库服务
+   docker-compose restart postgres neo4j
+   ```
+
+3. **API 认证失败**
+   ```bash
+   # 检查环境变量
+   docker-compose exec mem0 env | grep API_KEY
+   ```
+
+### 性能优化
+
+1. **数据库优化**
+   ```sql
+   -- PostgreSQL 索引优化
+   CREATE INDEX IF NOT EXISTS idx_memories_user_id ON memories(user_id);
+   CREATE INDEX IF NOT EXISTS idx_memories_created_at ON memories(created_at);
+   ```
+
+2. **内存配置**
+   ```yaml
+   # docker-compose.yml
+   services:
+     postgres:
+       environment:
+         - POSTGRES_SHARED_BUFFERS=256MB
+         - POSTGRES_EFFECTIVE_CACHE_SIZE=1GB
+   ```
+
+### 日志管理
+
+```bash
+# 查看实时日志
+docker-compose logs -f mem0
+
+# 查看特定时间范围的日志
+docker-compose logs --since="2024-01-01" --until="2024-01-02" mem0
+
+# 导出日志
+docker-compose logs mem0 > mem0.log
+```
+
+## 贡献指南
+
+我们欢迎社区贡献！请遵循以下步骤：
+
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 创建 Pull Request
+
+### 开发环境设置
+
+```bash
+# 安装开发依赖
+pip install -r requirements-dev.txt
+
+# 运行测试
+pytest tests/
+
+# 代码格式化
+black .
+flake8 .
+```
+
+## 许可证
+
+本项目采用 Apache 2.0 许可证 - 详见 [LICENSE](LICENSE) 文件。
+
+## 致谢
+
+- 感谢 [Mem0](https://mem0.ai) 团队提供的优秀基础框架
+- 感谢所有贡献者的努力和支持
+
+---
+
+<p align="center">
+  <strong>🌟 如果这个项目对您有帮助，请给我们一个 Star！</strong>
+</p>
